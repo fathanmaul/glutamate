@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Glutamate;
 
+use Glutamate\Console\Commands\GenerateCommand;
+use Glutamate\Console\Commands\PushCommand;
 use Glutamate\Console\Commands\SyncCommand;
 use Illuminate\Support\ServiceProvider;
 
@@ -57,6 +59,8 @@ class GlutamateServiceProvider extends ServiceProvider
         ], ['glutamate', 'glutamate-migrations']);
 
         $this->commands([
+            GenerateCommand::class,
+            PushCommand::class,
             SyncCommand::class,
         ]);
     }
