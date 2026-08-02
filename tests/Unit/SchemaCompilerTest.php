@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 use Glutamate\Columns\IntColumn;
 use Glutamate\Columns\StringColumn;
-use Glutamate\Entity;
 use Glutamate\SchemaCompiler;
+use Illuminate\Database\Eloquent\Model;
 
-class TestValidEntity extends Entity
+class TestValidModel extends Model
 {
+    public static function id()
+    {
+        return IntColumn::make()->unsigned()->autoIncrement();
+    }
+
     public static function email(): StringColumn
     {
         return StringColumn::make()->maxLength(191)->unique();
@@ -25,7 +30,7 @@ class TestValidEntity extends Entity
     }
 }
 
-class TestCustomNameEntity extends Entity
+class TestCustomNameModel extends Model
 {
     public static function emailAddress(): StringColumn
     {
@@ -33,7 +38,7 @@ class TestCustomNameEntity extends Entity
     }
 }
 
-class TestDuplicateNameEntity extends Entity
+class TestDuplicateNameModel extends Model
 {
     public static function email(): StringColumn
     {
@@ -46,42 +51,36 @@ class TestDuplicateNameEntity extends Entity
     }
 }
 
-class TestNonEntity
+class TestNonModel
 {
     //
 }
 
-it('throws InvalidArgumentException when compiling non-entity classes', function () {
+it('throws InvalidArgumentException when compiling non-model classes', function () {
     expect(function () {
-        SchemaCompiler::compile(TestNonEntity::class);
-    })->toThrow(InvalidArgumentException::class, TestNonEntity::class.' must extend '.Entity::class);
+        SchemaCompiler::compile(TestNonModel::class);
+    })->toThrow(InvalidArgumentException::class, TestNonModel::class.' must extend '.Model::class);
 });
 
-it('compiles valid entities and returns resolved columns', function () {
-    $columns = SchemaCompiler::compile(TestValidEntity::class);
+it('compiles valid models and returns resolved columns', function () {
+    $columns = SchemaCompiler::compile(TestValidModel::class);
 
-    expect($columns)->toHaveCount(2);
-    expect($columns)->toHaveKeys(['email', 'age']);
+    expect($columns)->toHaveCount(3);
+    expect($columns)->toHaveKeys(['id', 'email', 'age']);
+    expect($columns['id'])->toBeInstanceOf(IntColumn::class);
     expect($columns['email'])->toBeInstanceOf(StringColumn::class);
     expect($columns['age'])->toBeInstanceOf(IntColumn::class);
 });
 
 it('does not invoke static methods that do not return a Column subtype', function () {
-    // TestValidEntity has public static function someHelper() returning a string.
+    // TestValidModel has public static function someHelper() returning a string.
     // It should be skipped, not thrown or crashed.
-    $columns = SchemaCompiler::compile(TestValidEntity::class);
+    $columns = SchemaCompiler::compile(TestValidModel::class);
     expect($columns)->not->toHaveKey('some_helper');
 });
 
-it('does not invoke inherited static methods from Entity parent class', function () {
-    $columns = SchemaCompiler::compile(TestValidEntity::class);
-
-    // fromRaw, fromEloquent etc. should be skipped
-    expect($columns)->not->toHaveKeys(['from_raw', 'from_eloquent', 'from_eloquent_collection']);
-});
-
 it('resolves custom names using as() modifier', function () {
-    $columns = SchemaCompiler::compile(TestCustomNameEntity::class);
+    $columns = SchemaCompiler::compile(TestCustomNameModel::class);
 
     expect($columns)->toHaveCount(1);
     expect($columns)->toHaveKey('custom_email');
@@ -90,6 +89,6 @@ it('resolves custom names using as() modifier', function () {
 
 it('throws LogicException when compiling duplicate column names', function () {
     expect(function () {
-        SchemaCompiler::compile(TestDuplicateNameEntity::class);
+        SchemaCompiler::compile(TestDuplicateNameModel::class);
     })->toThrow(LogicException::class, "Duplicate column name 'email' resolved");
 });

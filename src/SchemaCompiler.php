@@ -5,65 +5,79 @@ declare(strict_types=1);
 namespace Glutamate;
 
 use Glutamate\Columns\Column;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use LogicException;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionNamedType;
+use Throwable;
 
 final class SchemaCompiler
 {
     /**
-     * Compile and return the column schema for the given entity class.
+     * Compile and return the column schema for the given model class.
      *
-     * @return array<string, Column>
+     * @param  class-string  $modelClass
+     * @return array<string, Column<mixed>>
      */
-    public static function compile(string $entityClass): array
+    public static function compile(string $modelClass): array
     {
-        if (! is_subclass_of($entityClass, Entity::class)) {
-            throw new InvalidArgumentException("{$entityClass} must extend ".Entity::class);
+        $isModel = is_subclass_of($modelClass, Model::class);
+
+        if (! $isModel) {
+            throw new InvalidArgumentException("{$modelClass} must extend ".Model::class);
         }
 
-        $ref = new ReflectionClass($entityClass);
+        /** @var class-string<object> $modelClass */
+        $ref = new ReflectionClass($modelClass);
         $columns = [];
 
         foreach ($ref->getMethods(ReflectionMethod::IS_STATIC | ReflectionMethod::IS_PUBLIC) as $method) {
-            // Skip inherited static methods (from Entity parent class)
-            if ($method->class !== $entityClass) {
+            if ($method->class !== $modelClass) {
                 continue;
             }
 
-            // Check return type before invoking
+            if ($method->getNumberOfRequiredParameters() > 0) {
+                continue;
+            }
+
+            // Optional optimization: skip if return type is explicitly incompatible
             $returnType = $method->getReturnType();
 
-            if (! $returnType instanceof ReflectionNamedType || $returnType->isBuiltin()) {
+            if ($returnType instanceof ReflectionNamedType) {
+                $returnClassName = $returnType->getName();
+
+                if ($returnType->isBuiltin() || ($returnClassName !== SchemaElement::class && ! is_subclass_of($returnClassName, SchemaElement::class))) {
+                    continue;
+                }
+            }
+
+            try {
+                $column = $method->invoke(null);
+            } catch (Throwable $e) {
                 continue;
             }
 
-            $returnClassName = $returnType->getName();
-
-            if ($returnClassName !== Column::class && ! is_subclass_of($returnClassName, Column::class)) {
+            if (! $column instanceof SchemaElement) {
                 continue;
             }
 
-            /** @var Column $column */
-            $column = $method->invoke(null);
-
-            $name = $column->getName() ?? self::snake($method->getName());
-
-            if ($column->getName() === null) {
-                $column->as($name);
+            if ($column instanceof Column && $column->getName() === null) {
+                $column->as(self::snake($method->getName()));
             }
 
-            if (isset($columns[$name])) {
-                throw new LogicException(
-                    "Duplicate column name '{$name}' resolved from {$entityClass}::{$method->getName()}() — "
-                    .'already defined by another method. Use ->as() to disambiguate.',
-                );
-            }
+            foreach ($column->getColumns() as $colName => $singleColumn) {
+                if (isset($columns[$colName])) {
+                    throw new LogicException(
+                        "Duplicate column name '{$colName}' resolved from {$modelClass}::{$method->getName()}() — "
+                        .'already defined by another method. Use ->as() to disambiguate.',
+                    );
+                }
 
-            $columns[$name] = $column;
+                $columns[$colName] = $singleColumn;
+            }
         }
 
         return $columns;
