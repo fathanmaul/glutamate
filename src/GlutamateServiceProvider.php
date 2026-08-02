@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Glutamate;
 
-use Glutamate\Console\Commands\GlutamateCommand;
+use Glutamate\Console\Commands\SyncCommand;
 use Illuminate\Support\ServiceProvider;
 
 class GlutamateServiceProvider extends ServiceProvider
@@ -29,6 +29,8 @@ class GlutamateServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'glutamate');
 
         $this->loadTranslationsFrom(__DIR__.'/../lang', 'glutamate');
+
+        $this->loadMigrationsFrom(database_path('migrations/glutamate'));
 
         if (! $this->app->runningInConsole()) {
             return;
@@ -55,7 +57,7 @@ class GlutamateServiceProvider extends ServiceProvider
         ], ['glutamate', 'glutamate-migrations']);
 
         $this->commands([
-            GlutamateCommand::class,
+            SyncCommand::class,
         ]);
     }
 }

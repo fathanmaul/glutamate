@@ -13,7 +13,7 @@ it('returns the same instance from the container', function () {
 });
 
 it('merges the package config', function () {
-    expect(config('glutamate.placeholder'))->toBe('default');
+    expect(config('glutamate.entities_namespace'))->toBe('App\\Entities');
 });
 
 it('loads the package translations', function () {
@@ -25,7 +25,7 @@ it('loads the package views', function () {
 });
 
 it('registers the artisan command', function () {
-    $this->artisan('glutamate:placeholder')
-        ->expectsOutputToContain('Glutamate placeholder command executed.')
+    $this->artisan('glutamate:sync')
+        ->expectsOutputToContain('No entities found.')
         ->assertSuccessful();
 });
