@@ -1,6 +1,6 @@
 <div align="center">
     <h1>Glutamate</h1>
-    <p>A type-safe schema layer for Laravel — Entity definitions, auto-generated & versioned migrations, and typo-safe queries, all on top of Eloquent (not a replacement for it).</p>
+    <p>A type-safe schema layer for Laravel — defined directly inside Eloquent Models, auto-generated & versioned migrations, auto-updated type-safe PHPDoc docblocks, and typo-safe queries, all on top of Eloquent (not a replacement for it).</p>
 </div>
 
 <p align="center">
@@ -11,15 +11,16 @@
     <a href="https://packagist.org/packages/lutfisobri/glutamate"><img src="https://img.shields.io/packagist/dt/lutfisobri/glutamate.svg?style=flat-square" alt="Total Downloads"></a>
 </p>
 
-> **Status:** early development. The API below reflects the intended design and may not be fully implemented yet — check the [changelog](CHANGELOG.md) for what's actually shipped.
-
 ## Why Glutamate
 
-Eloquent has no compile-time check for column names or types — `$user->emial` (typo) silently returns `null` instead of erroring. Glutamate adds a schema definition layer that:
+Eloquent has no compile-time check for column names or types — `$user->emial` (typo) silently returns `null` instead of erroring. Glutamate adds a schema definition layer directly onto your Models that:
 
-- generates and auto-diffs your migrations from a single Entity definition, instead of hand-writing them
-- catches typo'd column names and mismatched value types via static analysis (PHPStan/Larastan), not at runtime
-- stays fully compatible with Eloquent — your Models, relations, and queries keep working exactly as before
+- **Generates and auto-diffs your migrations** from Model class declarations, instead of hand-writing them
+- **Auto-generates PHPDoc `@property` docblocks** on your Model classes for 100% type-safe IDE autocomplete and PHPStan validation
+- **Catches typo'd column names and mismatched value types** via static analysis (PHPStan/Larastan), not at runtime
+- **Stays fully compatible with Eloquent** — your Models, relations, and queries keep working exactly as before
+
+---
 
 ## Installation
 
@@ -29,107 +30,99 @@ You can install the package via Composer:
 composer require lutfisobri/glutamate
 ```
 
-You may publish all of the package's resources at once:
-
-```bash
-php artisan vendor:publish --tag="glutamate"
-```
-
-Or, you may publish each resource individually:
-
-### Publishing the Configuration File
+You can publish the package configuration:
 
 ```bash
 php artisan vendor:publish --tag="glutamate-config"
 ```
 
-### Publishing and Running the Migrations
-
-```bash
-php artisan vendor:publish --tag="glutamate-migrations"
-php artisan migrate
-```
-
-### Publishing the Views
-
-```bash
-php artisan vendor:publish --tag="glutamate-views"
-```
-
-### Publishing the Translations
-
-```bash
-php artisan vendor:publish --tag="glutamate-lang"
-```
-
-### Publishing the Public Assets
-
-```bash
-php artisan vendor:publish --tag="glutamate-assets"
-```
+---
 
 ## Usage
 
-Define a table's structure once, as an Entity:
+### 1. Define Columns inside Eloquent Models
+
+Define the table structure once, directly inside your Eloquent Models as static methods returning `Column` or `ColumnGroup` objects:
 
 ```php
-use Glutamate\Entity;
+use Glutamate\Columns\IdColumn;
 use Glutamate\Columns\StringColumn;
 use Glutamate\Columns\IntColumn;
+use Glutamate\Columns\TimestampsColumn;
+use Illuminate\Database\Eloquent\Model;
 
-class UserEntity extends Entity
+class Post extends Model
 {
-    public static function emailAddress(): StringColumn
+    public static function id(): IdColumn
     {
-        // column name auto-detected from the method name: emailAddress -> email_address
-        return StringColumn::make()->maxLength(191)->unique();
+        return IdColumn::make()->as(__FUNCTION__);
     }
 
-    public static function age(): IntColumn
+    public static function title(): StringColumn
     {
-        return IntColumn::make()->unsigned()->nullable();
+        return StringColumn::make()->as(__FUNCTION__)->maxLength(200);
     }
 
-    public static function userId2fa(): StringColumn
+    public static function views(): IntColumn
     {
-        // ambiguous auto-conversion -> pass the column name explicitly
-        return StringColumn::make('user_id_2fa');
+        return IntColumn::make()->as(__FUNCTION__)->unsigned()->default(0);
+    }
+
+    public static function timestamps(): TimestampsColumn
+    {
+        return TimestampsColumn::make();
     }
 }
 ```
 
-Generate and keep migrations in sync with your Entity definitions:
+### 2. Run Sync or Push Commands
+
+To generate migrations and instantly update your Model class docblocks with type-safe properties:
 
 ```bash
+# Generate migration files + update Model docblocks + run artisan migrate
 php artisan glutamate:sync
+
+# Just generate migration files and update Model docblocks (without running migrate)
+php artisan glutamate:generate
+
+# Prototyping: apply schema changes directly to the database without generating migration files
+php artisan glutamate:push
 ```
 
-Query safely — column references are checked by static analysis instead of relying on raw strings, while execution still goes through Eloquent:
+After running generate/sync, Glutamate will automatically inject/update the PHPDoc docblocks on your model classes:
 
 ```php
-use App\Models\User;
-
-User::where((string) UserEntity::emailAddress(), 'lutfi@example.com')->first();
+/**
+ * @property int $id
+ * @property string $title
+ * @property int $views
+ * @property \Carbon\Carbon|null $created_at
+ * @property \Carbon\Carbon|null $updated_at
+ */
+class Post extends Model
+{
+    // ...
+}
 ```
 
-> A dedicated `Query::for(UserEntity::class)` wrapper and Larastan rule set are planned — see [CHANGELOG](CHANGELOG.md) / issues for progress.
+### 3. Query Safely
 
-## Changelog
+With the auto-generated docblocks, accessing model properties is fully type-hinted and checked by IDE / PHPStan. For querying, you can pass Column objects directly to query builder methods to avoid typos:
 
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
+```php
+// Post::title() evaluates to "title" at runtime
+$posts = Post::where(Post::title(), 'My Post Title')->get();
+```
 
-## Contributing
+If you use PHPStan with the Glutamate extension, any mismatched query type will be caught at static-analysis time:
 
-Thank you for considering contributing to Glutamate! Please review our [contributing guide](.github/CONTRIBUTING.md) to get started.
+```php
+// PHPStan Error: Parameter #2 of query method where() expects int, string given.
+Post::where(Post::views(), 'not-an-integer')->get();
+```
 
-## Security Vulnerabilities
-
-Please review [our security policy](.github/SECURITY.md) on how to report security vulnerabilities.
-
-## Credits
-
-- [Lutfi Sobri](https://github.com/lutfisobri)
-- [All Contributors](../../contributors)
+---
 
 ## License
 
