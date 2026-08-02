@@ -13,7 +13,7 @@ it('returns the same instance from the container', function () {
 });
 
 it('merges the package config', function () {
-    expect(config('glutamate.entities_namespace'))->toBe('App\\Entities');
+    expect(config('glutamate.models_namespace'))->toBe('App\\Models');
 });
 
 it('loads the package translations', function () {
@@ -25,7 +25,7 @@ it('loads the package views', function () {
 });
 
 it('registers the artisan command', function () {
-    $this->artisan('glutamate:sync')
-        ->expectsOutputToContain('No entities found.')
+    $this->artisan('glutamate:generate')
+        ->expectsOutputToContain('No models found.')
         ->assertSuccessful();
 });

@@ -25,4 +25,9 @@ abstract class TestCase extends Orchestra
             'prefix' => '',
         ]);
     }
+
+    protected function defineDatabaseMigrations(): void
+    {
+        $this->loadMigrationsFrom(realpath(__DIR__.'/../workbench/database/migrations'));
+    }
 }

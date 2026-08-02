@@ -11,7 +11,11 @@ class WorkbenchServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        config([
+            'glutamate.models_path' => realpath(__DIR__.'/../Models'),
+            'glutamate.models_namespace' => 'Workbench\\App\\Models',
+            'glutamate.snapshot_path' => realpath(__DIR__.'/../../').'/storage/framework/glutamate/snapshots',
+        ]);
     }
 
     /**

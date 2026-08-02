@@ -6,23 +6,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Entities Path
+    | Models Path
     |--------------------------------------------------------------------------
     |
-    | The absolute directory path where your Entity classes are located.
+    | The absolute directory path where your Eloquent Model classes are located.
     |
     */
-    'entities_path' => app_path('Entities'),
+    'models_path' => app_path('Models'),
 
     /*
     |--------------------------------------------------------------------------
-    | Entities Namespace
+    | Models Namespace
     |--------------------------------------------------------------------------
     |
-    | The base namespace mapping for your Entity classes.
+    | The base namespace mapping for your Eloquent Model classes.
     |
     */
-    'entities_namespace' => 'App\\Entities',
+    'models_namespace' => 'App\\Models',
 
     /*
     |--------------------------------------------------------------------------
