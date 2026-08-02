@@ -87,3 +87,26 @@ it('correctly maps to Laravel Blueprint', function () {
     expect($col->default)->toBe('test@example.com');
     expect($col->unique)->toBeTrue();
 });
+
+use Illuminate\Database\Eloquent\Model as EloquentModel;
+
+class TestModelStaticColumn extends EloquentModel
+{
+    public static function emailAddress(): StringColumn
+    {
+        return StringColumn::make()->as(__FUNCTION__);
+    }
+
+    public static function explicitlyNamed(): StringColumn
+    {
+        return StringColumn::make('custom_name');
+    }
+}
+
+it('allows setting column name explicitly using as() or make() constructor parameter', function () {
+    $email = TestModelStaticColumn::emailAddress();
+    expect($email->getName())->toBe('emailAddress');
+
+    $explicit = TestModelStaticColumn::explicitlyNamed();
+    expect($explicit->getName())->toBe('custom_name');
+});

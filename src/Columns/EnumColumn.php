@@ -7,6 +7,9 @@ namespace Glutamate\Columns;
 use Illuminate\Database\Schema\Blueprint;
 use InvalidArgumentException;
 
+/**
+ * @extends Column<string>
+ */
 final class EnumColumn extends Column
 {
     /** @var string[] */

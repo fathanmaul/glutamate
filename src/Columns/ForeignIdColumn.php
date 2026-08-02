@@ -6,11 +6,14 @@ namespace Glutamate\Columns;
 
 use Illuminate\Database\Schema\Blueprint;
 
+/**
+ * @extends Column<int>
+ */
 final class ForeignIdColumn extends Column
 {
-    public static function make(): static
+    public static function make(?string $name = null): static
     {
-        return new self;
+        return new self($name);
     }
 
     protected bool $isConstrained = false;

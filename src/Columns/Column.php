@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace Glutamate\Columns;
 
+use Glutamate\SchemaElement;
+use Illuminate\Contracts\Database\Query\Expression;
+use Illuminate\Database\Grammar;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\ColumnDefinition;
 use Stringable;
 
-abstract class Column implements Stringable
+/**
+ * @template T
+ */
+abstract class Column implements Expression, SchemaElement, Stringable
 {
     protected ?string $name = null;
 
@@ -120,6 +126,24 @@ abstract class Column implements Stringable
         if ($this->index) {
             $col->index();
         }
+    }
+
+    /**
+     * Get the value of the expression.
+     */
+    public function getValue(Grammar $grammar): string
+    {
+        return $this->name ?? '';
+    }
+
+    /**
+     * Get the columns associated with this schema element.
+     *
+     * @return array<string, Column<mixed>>
+     */
+    public function getColumns(): array
+    {
+        return [$this->getName() ?? '' => $this];
     }
 
     abstract public function toBlueprint(Blueprint $table, string $name): void;

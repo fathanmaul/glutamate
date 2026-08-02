@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace Glutamate\Columns;
 
+use Carbon\Carbon;
 use Illuminate\Database\Schema\Blueprint;
 
+/**
+ * @extends Column<Carbon>
+ */
 final class DateTimeColumn extends Column
 {
-    public static function make(): static
+    public static function make(?string $name = null): static
     {
-        return new self;
+        return new self($name);
     }
 
     protected bool $useCurrent = false;

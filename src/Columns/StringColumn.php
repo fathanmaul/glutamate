@@ -6,11 +6,14 @@ namespace Glutamate\Columns;
 
 use Illuminate\Database\Schema\Blueprint;
 
+/**
+ * @extends Column<string>
+ */
 class StringColumn extends Column
 {
-    public static function make(): static
+    public static function make(?string $name = null): static
     {
-        return new static;
+        return new static($name);
     }
 
     protected ?int $maxLength = null;
