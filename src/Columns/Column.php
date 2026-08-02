@@ -6,121 +6,119 @@ namespace Glutamate\Columns;
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\ColumnDefinition;
-use Illuminate\Support\Str;
 use Stringable;
 
 abstract class Column implements Stringable
 {
     protected ?string $name = null;
 
-    protected bool $isNullable = false;
+    protected bool $nullable = false;
 
-    protected mixed $defaultValue = null;
+    protected bool $hasDefault = false;
 
-    protected bool $isUnique = false;
+    protected mixed $default = null;
 
-    protected bool $isIndex = false;
+    protected bool $unique = false;
+
+    protected bool $index = false;
 
     final public function __construct(?string $name = null)
     {
         $this->name = $name;
     }
 
-    public static function make(?string $name = null): static
+    public function columnName(string $name): static
     {
-        if ($name === null) {
-            $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
-            $caller = $trace[1] ?? null;
-
-            if ($caller !== null) {
-                $name = Str::snake($caller['function']);
-            }
-        }
-
-        return new static($name);
+        return $this->as($name);
     }
 
-    public function columnName(string $name): static
+    public function as(string $name): static
     {
         $this->name = $name;
 
         return $this;
     }
 
-    public function getName(): string
+    public function getName(): ?string
     {
-        return $this->name ?? '';
+        return $this->name;
     }
 
     public function nullable(bool $value = true): static
     {
-        $this->isNullable = $value;
+        $this->nullable = $value;
 
         return $this;
     }
 
     public function default(mixed $value): static
     {
-        $this->defaultValue = $value;
+        $this->hasDefault = true;
+        $this->default = $value;
 
         return $this;
     }
 
     public function unique(bool $value = true): static
     {
-        $this->isUnique = $value;
+        $this->unique = $value;
 
         return $this;
     }
 
     public function index(bool $value = true): static
     {
-        $this->isIndex = $value;
+        $this->index = $value;
 
         return $this;
     }
 
     public function isNullable(): bool
     {
-        return $this->isNullable;
+        return $this->nullable;
+    }
+
+    public function hasDefault(): bool
+    {
+        return $this->hasDefault;
     }
 
     public function getDefault(): mixed
     {
-        return $this->defaultValue;
+        return $this->default;
     }
 
     public function isUnique(): bool
     {
-        return $this->isUnique;
+        return $this->unique;
     }
 
     public function isIndex(): bool
     {
-        return $this->isIndex;
+        return $this->index;
     }
 
     public function __toString(): string
     {
-        return $this->getName();
+        return $this->getName() ?? '';
     }
 
-    protected function applyModifiers(ColumnDefinition $column): void
+    protected function applyCommonModifiers(ColumnDefinition $col): void
     {
-        if ($this->isNullable) {
-            $column->nullable();
+        if ($this->nullable) {
+            $col->nullable();
         }
 
-        if ($this->defaultValue !== null) {
-            $column->default($this->defaultValue);
+        if ($this->hasDefault) {
+            $col->default($this->default);
         }
 
-        if ($this->isUnique) {
-            $column->unique();
+        if ($this->unique) {
+            $col->unique();
         }
 
-        if ($this->isIndex) {
-            $column->index();
+        if ($this->index) {
+            $col->index();
         }
     }
 

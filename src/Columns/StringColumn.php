@@ -8,6 +8,11 @@ use Illuminate\Database\Schema\Blueprint;
 
 class StringColumn extends Column
 {
+    public static function make(): static
+    {
+        return new static;
+    }
+
     protected ?int $maxLength = null;
 
     public function maxLength(?int $length): static
@@ -26,11 +31,11 @@ class StringColumn extends Column
     {
         $column = $table->string($name, $this->maxLength);
 
-        $this->applyModifiers($column);
+        $this->applyCommonModifiers($column);
     }
 
     public function phpType(): string
     {
-        return $this->isNullable ? '?string' : 'string';
+        return $this->nullable ? '?string' : 'string';
     }
 }

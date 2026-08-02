@@ -8,54 +8,21 @@ use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Grammars\MySqlGrammar;
 
-// Dummy class to simulate caller for backtrace
-class DummyEntity
-{
-    public static function emailAddress(): StringColumn
-    {
-        return StringColumn::make();
-    }
-
-    public static function age(): IntColumn
-    {
-        return IntColumn::make();
-    }
-
-    public static function customEmail(): StringColumn
-    {
-        return StringColumn::make('explicit_name');
-    }
-}
-
-it('auto-detects column name from immediate caller using backtrace', function () {
-    $email = DummyEntity::emailAddress();
-    $age = DummyEntity::age();
-
-    expect($email->getName())->toBe('email_address');
-    expect($age->getName())->toBe('age');
-});
-
-it('uses explicit name if passed to make()', function () {
-    $custom = DummyEntity::customEmail();
-
-    expect($custom->getName())->toBe('explicit_name');
-});
-
-it('allows overriding column name via columnName()', function () {
-    $email = DummyEntity::emailAddress();
-    $email->columnName('new_email');
-
+it('allows overriding column name via columnName() and as()', function () {
+    $email = StringColumn::make()->columnName('new_email');
     expect($email->getName())->toBe('new_email');
+
+    $email->as('another_email');
+    expect($email->getName())->toBe('another_email');
 });
 
 it('casts to string returning the resolved name', function () {
-    $email = DummyEntity::emailAddress();
-
+    $email = StringColumn::make()->as('email_address');
     expect((string) $email)->toBe('email_address');
 });
 
 it('supports common fluent modifiers and stores metadata', function () {
-    $column = StringColumn::make('test')
+    $column = StringColumn::make()
         ->nullable()
         ->default('foo')
         ->unique()
@@ -68,13 +35,13 @@ it('supports common fluent modifiers and stores metadata', function () {
 });
 
 it('supports string specific modifiers', function () {
-    $column = StringColumn::make('test')->maxLength(100);
+    $column = StringColumn::make()->maxLength(100);
 
     expect($column->getMaxLength())->toBe(100);
 });
 
 it('supports integer specific modifiers', function () {
-    $column = IntColumn::make('test')
+    $column = IntColumn::make()
         ->unsigned()
         ->autoIncrement();
 
@@ -83,16 +50,16 @@ it('supports integer specific modifiers', function () {
 });
 
 it('returns correct php type representation', function () {
-    $string = StringColumn::make('test');
+    $string = StringColumn::make();
     expect($string->phpType())->toBe('string');
 
-    $nullableString = StringColumn::make('test')->nullable();
+    $nullableString = StringColumn::make()->nullable();
     expect($nullableString->phpType())->toBe('?string');
 
-    $int = IntColumn::make('test');
+    $int = IntColumn::make();
     expect($int->phpType())->toBe('int');
 
-    $nullableInt = IntColumn::make('test')->nullable();
+    $nullableInt = IntColumn::make()->nullable();
     expect($nullableInt->phpType())->toBe('?int');
 });
 
@@ -101,7 +68,7 @@ it('correctly maps to Laravel Blueprint', function () {
     $connection->shouldReceive('getSchemaGrammar')->andReturn(new MySqlGrammar($connection));
     $table = new Blueprint($connection, 'users');
 
-    $stringColumn = StringColumn::make('email')
+    $stringColumn = StringColumn::make()
         ->maxLength(150)
         ->nullable()
         ->default('test@example.com')
