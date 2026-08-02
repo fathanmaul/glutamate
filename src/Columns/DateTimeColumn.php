@@ -59,4 +59,23 @@ final class DateTimeColumn extends Column
     {
         return $this->nullable ? '?\Carbon\Carbon' : '\Carbon\Carbon';
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toSnapshotArray(): array
+    {
+        return [
+            'type' => 'DateTimeColumn',
+            'nullable' => $this->nullable,
+            'hasDefault' => $this->hasDefault,
+            'default' => $this->default,
+            'unique' => $this->unique,
+            'index' => $this->index,
+            'meta' => [
+                'useCurrent' => $this->useCurrent,
+                'useCurrentOnUpdate' => $this->useCurrentOnUpdate,
+            ],
+        ];
+    }
 }

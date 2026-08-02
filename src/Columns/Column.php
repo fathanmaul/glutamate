@@ -125,4 +125,9 @@ abstract class Column implements Stringable
     abstract public function toBlueprint(Blueprint $table, string $name): void;
 
     abstract public function phpType(): string;
+
+    /**
+     * @return array<string, mixed>
+     */
+    abstract public function toSnapshotArray(): array;
 }

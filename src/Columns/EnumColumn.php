@@ -45,4 +45,22 @@ final class EnumColumn extends Column
     {
         return $this->nullable ? '?string' : 'string';
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toSnapshotArray(): array
+    {
+        return [
+            'type' => 'EnumColumn',
+            'nullable' => $this->nullable,
+            'hasDefault' => $this->hasDefault,
+            'default' => $this->default,
+            'unique' => $this->unique,
+            'index' => $this->index,
+            'meta' => [
+                'values' => $this->values,
+            ],
+        ];
+    }
 }

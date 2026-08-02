@@ -38,4 +38,22 @@ class StringColumn extends Column
     {
         return $this->nullable ? '?string' : 'string';
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toSnapshotArray(): array
+    {
+        return [
+            'type' => 'StringColumn',
+            'nullable' => $this->nullable,
+            'hasDefault' => $this->hasDefault,
+            'default' => $this->default,
+            'unique' => $this->unique,
+            'index' => $this->index,
+            'meta' => [
+                'maxLength' => $this->maxLength,
+            ],
+        ];
+    }
 }

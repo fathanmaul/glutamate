@@ -83,4 +83,25 @@ final class ForeignIdColumn extends Column
     {
         return $this->nullable ? '?int' : 'int';
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toSnapshotArray(): array
+    {
+        return [
+            'type' => 'ForeignIdColumn',
+            'nullable' => $this->nullable,
+            'hasDefault' => $this->hasDefault,
+            'default' => $this->default,
+            'unique' => $this->unique,
+            'index' => $this->index,
+            'meta' => [
+                'isConstrained' => $this->isConstrained,
+                'referencesTable' => $this->referencesTable,
+                'onDelete' => $this->onDeleteAction,
+                'onUpdate' => $this->onUpdateAction,
+            ],
+        ];
+    }
 }

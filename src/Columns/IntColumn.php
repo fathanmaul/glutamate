@@ -104,4 +104,24 @@ final class IntColumn extends Column
     {
         return $this->nullable ? '?int' : 'int';
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toSnapshotArray(): array
+    {
+        return [
+            'type' => 'IntColumn',
+            'nullable' => $this->nullable,
+            'hasDefault' => $this->hasDefault,
+            'default' => $this->default,
+            'unique' => $this->unique,
+            'index' => $this->index,
+            'meta' => [
+                'size' => $this->size,
+                'unsigned' => $this->unsigned,
+                'autoIncrement' => $this->autoIncrement,
+            ],
+        ];
+    }
 }

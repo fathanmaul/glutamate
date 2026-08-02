@@ -63,4 +63,24 @@ final class DecimalColumn extends Column
     {
         return $this->nullable ? '?string' : 'string';
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toSnapshotArray(): array
+    {
+        return [
+            'type' => 'DecimalColumn',
+            'nullable' => $this->nullable,
+            'hasDefault' => $this->hasDefault,
+            'default' => $this->default,
+            'unique' => $this->unique,
+            'index' => $this->index,
+            'meta' => [
+                'precision' => $this->precision,
+                'scale' => $this->scale,
+                'unsigned' => $this->unsigned,
+            ],
+        ];
+    }
 }

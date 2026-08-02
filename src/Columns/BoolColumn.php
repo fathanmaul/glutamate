@@ -23,4 +23,20 @@ final class BoolColumn extends Column
     {
         return $this->nullable ? '?bool' : 'bool';
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toSnapshotArray(): array
+    {
+        return [
+            'type' => 'BoolColumn',
+            'nullable' => $this->nullable,
+            'hasDefault' => $this->hasDefault,
+            'default' => $this->default,
+            'unique' => $this->unique,
+            'index' => $this->index,
+            'meta' => [],
+        ];
+    }
 }
