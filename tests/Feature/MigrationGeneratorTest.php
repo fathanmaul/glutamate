@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Schema;
 
 it('generates a frozen create migration and executes it on SQLite', function () {
     $current = new SchemaSnapshot(
-        entityClass: 'App\\Entities\\Post',
+        modelClass: 'App\\Entities\\Post',
         table: 'test_generator_posts',
         columns: [
             'title' => [
@@ -76,7 +76,7 @@ it('generates a frozen create migration and executes it on SQLite', function () 
 
 it('generates a frozen alter migration adding and removing columns and executes it', function () {
     $previous = new SchemaSnapshot(
-        entityClass: 'App\\Entities\\Post',
+        modelClass: 'App\\Entities\\Post',
         table: 'test_generator_posts_alter',
         columns: [
             'title' => [
@@ -92,7 +92,7 @@ it('generates a frozen alter migration adding and removing columns and executes 
     );
 
     $current = new SchemaSnapshot(
-        entityClass: 'App\\Entities\\Post',
+        modelClass: 'App\\Entities\\Post',
         table: 'test_generator_posts_alter',
         columns: [
             'title' => [

@@ -20,7 +20,7 @@ it('saves and loads snapshot correctly', function () {
     $store = new SnapshotStore($tempDir);
 
     $snapshot = new SchemaSnapshot(
-        entityClass: 'App\\Entities\\Post',
+        modelClass: 'App\\Entities\\Post',
         table: 'posts',
         columns: [
             'title' => [
@@ -43,7 +43,7 @@ it('saves and loads snapshot correctly', function () {
 
     $loaded = $store->load('App\\Entities\\Post');
     expect($loaded)->not->toBeNull();
-    expect($loaded->entityClass)->toBe($snapshot->entityClass);
+    expect($loaded->modelClass)->toBe($snapshot->modelClass);
     expect($loaded->table)->toBe($snapshot->table);
     expect($loaded->columns)->toBe($snapshot->columns);
 

@@ -6,15 +6,12 @@ namespace Glutamate\Tests\Unit\Schema;
 
 use Glutamate\Columns\IntColumn;
 use Glutamate\Columns\StringColumn;
-use Glutamate\Entity;
 use Glutamate\Schema\SchemaSnapshot;
+use Illuminate\Database\Eloquent\Model;
 
-class SnapshotTestEntity extends Entity
+class SnapshotTestModel extends Model
 {
-    public static function table(): string
-    {
-        return 'snapshot_test_table';
-    }
+    protected $table = 'snapshot_test_table';
 
     public static function title(): StringColumn
     {
@@ -27,10 +24,10 @@ class SnapshotTestEntity extends Entity
     }
 }
 
-it('creates snapshot from entity class correctly', function () {
-    $snapshot = SchemaSnapshot::fromEntity(SnapshotTestEntity::class);
+it('creates snapshot from model class correctly', function () {
+    $snapshot = SchemaSnapshot::fromModel(SnapshotTestModel::class);
 
-    expect($snapshot->entityClass)->toBe(SnapshotTestEntity::class);
+    expect($snapshot->modelClass)->toBe(SnapshotTestModel::class);
     expect($snapshot->table)->toBe('snapshot_test_table');
     expect($snapshot->columns)->toHaveKeys(['title', 'views']);
 
@@ -45,12 +42,12 @@ it('creates snapshot from entity class correctly', function () {
 });
 
 it('supports round-trip via arrays', function () {
-    $snapshot = SchemaSnapshot::fromEntity(SnapshotTestEntity::class);
+    $snapshot = SchemaSnapshot::fromModel(SnapshotTestModel::class);
     $array = $snapshot->toArray();
 
     $restored = SchemaSnapshot::fromArray($array);
 
-    expect($restored->entityClass)->toBe($snapshot->entityClass);
+    expect($restored->modelClass)->toBe($snapshot->modelClass);
     expect($restored->table)->toBe($snapshot->table);
     expect($restored->columns)->toBe($snapshot->columns);
 });

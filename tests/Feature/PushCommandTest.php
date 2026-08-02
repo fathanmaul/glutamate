@@ -7,7 +7,7 @@ namespace Glutamate\Tests\Feature;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 
-it('runs sync, generating migration file and executing migrate', function () {
+it('runs push applying schema directly to database without writing migrations', function () {
     $tempEntitiesDir = sys_get_temp_dir().'/glutamate_entities_'.uniqid();
     $tempSnapshotsDir = sys_get_temp_dir().'/glutamate_snapshots_'.uniqid();
 
@@ -18,14 +18,14 @@ it('runs sync, generating migration file and executing migrate', function () {
     $classCode = <<<'PHP'
 <?php
 
-namespace Glutamate\Tests\Feature\TempEntitiesSyncCommand;
+namespace Glutamate\Tests\Feature\TempEntitiesPush;
 
 use Glutamate\Columns\StringColumn;
 use Illuminate\Database\Eloquent\Model;
 
-class TempProductSyncCommandEntity extends Model
+class TempProductPushEntity extends Model
 {
-    protected $table = 'temp_products_sync_command';
+    protected $table = 'temp_products_push';
 
     public static function name(): StringColumn
     {
@@ -34,14 +34,14 @@ class TempProductSyncCommandEntity extends Model
 }
 PHP;
 
-    $filePath = $tempEntitiesDir.'/TempProductSyncCommandEntity.php';
+    $filePath = $tempEntitiesDir.'/TempProductPushEntity.php';
     file_put_contents($filePath, $classCode);
 
     require_once $filePath;
 
     config([
         'glutamate.models_path' => $tempEntitiesDir,
-        'glutamate.models_namespace' => 'Glutamate\\Tests\\Feature\\TempEntitiesSyncCommand',
+        'glutamate.models_namespace' => 'Glutamate\\Tests\\Feature\\TempEntitiesPush',
         'glutamate.snapshot_path' => $tempSnapshotsDir,
     ]);
 
@@ -49,23 +49,25 @@ PHP;
     File::deleteDirectory($migrationsDir);
 
     // Assert table does not exist
-    expect(Schema::hasTable('temp_products_sync_command'))->toBeFalse();
+    expect(Schema::hasTable('temp_products_push'))->toBeFalse();
 
-    // Run sync
-    $this->artisan('glutamate:sync')
+    // Run push
+    $this->artisan('glutamate:push')
+        ->expectsOutputToContain('Pushed: schema for')
         ->assertSuccessful();
 
-    // Assert migration file was generated
-    $migrationFiles = File::files($migrationsDir);
-    expect($migrationFiles)->toHaveCount(1);
-    expect($migrationFiles[0]->getFilename())->toContain('create_temp_products_sync_command_table');
+    // Assert table exists
+    expect(Schema::hasTable('temp_products_push'))->toBeTrue();
+    expect(Schema::hasColumn('temp_products_push', 'name'))->toBeTrue();
 
-    // Assert table was created (migrate was called)
-    expect(Schema::hasTable('temp_products_sync_command'))->toBeTrue();
-    expect(Schema::hasColumn('temp_products_sync_command', 'name'))->toBeTrue();
+    // Assert no migration files were written
+    expect(is_dir($migrationsDir))->toBeFalse();
+
+    // Assert snapshot file exists
+    $snapshotFile = $tempSnapshotsDir.'/Glutamate.Tests.Feature.TempEntitiesPush.TempProductPushEntity.json';
+    expect(file_exists($snapshotFile))->toBeTrue();
 
     // Cleanup
     File::deleteDirectory($tempEntitiesDir);
     File::deleteDirectory($tempSnapshotsDir);
-    File::deleteDirectory($migrationsDir);
 });

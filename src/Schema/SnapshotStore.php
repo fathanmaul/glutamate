@@ -8,16 +8,16 @@ final class SnapshotStore
 {
     public function __construct(private readonly string $basePath) {}
 
-    public function path(string $entityClass): string
+    public function path(string $modelClass): string
     {
-        $slug = str_replace('\\', '.', $entityClass);
+        $slug = str_replace('\\', '.', $modelClass);
 
         return rtrim($this->basePath, '/')."/{$slug}.json";
     }
 
-    public function load(string $entityClass): ?SchemaSnapshot
+    public function load(string $modelClass): ?SchemaSnapshot
     {
-        $file = $this->path($entityClass);
+        $file = $this->path($modelClass);
 
         if (! file_exists($file)) {
             return null;
@@ -34,7 +34,7 @@ final class SnapshotStore
 
     public function save(SchemaSnapshot $snapshot): void
     {
-        $file = $this->path($snapshot->entityClass);
+        $file = $this->path($snapshot->modelClass);
 
         if (! is_dir(dirname($file))) {
             mkdir(dirname($file), 0755, true);

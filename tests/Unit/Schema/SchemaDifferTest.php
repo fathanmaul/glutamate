@@ -9,7 +9,7 @@ use Glutamate\Schema\SchemaSnapshot;
 
 it('detects all columns as added when previous snapshot is null', function () {
     $current = new SchemaSnapshot(
-        entityClass: 'App\\Entities\\Post',
+        modelClass: 'App\\Entities\\Post',
         table: 'posts',
         columns: [
             'title' => [
@@ -34,7 +34,7 @@ it('detects all columns as added when previous snapshot is null', function () {
 
 it('detects additions, changes, and removals correctly', function () {
     $previous = new SchemaSnapshot(
-        entityClass: 'App\\Entities\\Post',
+        modelClass: 'App\\Entities\\Post',
         table: 'posts',
         columns: [
             'title' => [
@@ -68,7 +68,7 @@ it('detects additions, changes, and removals correctly', function () {
     );
 
     $current = new SchemaSnapshot(
-        entityClass: 'App\\Entities\\Post',
+        modelClass: 'App\\Entities\\Post',
         table: 'posts',
         columns: [
             'title' => [
@@ -113,7 +113,7 @@ it('detects additions, changes, and removals correctly', function () {
 
 it('returns empty diff if snapshots are identical', function () {
     $snapshot = new SchemaSnapshot(
-        entityClass: 'App\\Entities\\Post',
+        modelClass: 'App\\Entities\\Post',
         table: 'posts',
         columns: [
             'title' => [

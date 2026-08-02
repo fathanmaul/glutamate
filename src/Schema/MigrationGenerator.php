@@ -8,7 +8,7 @@ use LogicException;
 
 final class MigrationGenerator
 {
-    public static function generate(string $entityClass, ?SchemaSnapshot $previous, SchemaSnapshot $current, SchemaDiff $diff): string
+    public static function generate(string $modelClass, ?SchemaSnapshot $previous, SchemaSnapshot $current, SchemaDiff $diff): string
     {
         $table = $current->table;
 
@@ -43,9 +43,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('{{table}}', function (Blueprint $table) {
-            $table->id();
 {{columnsCode}}
-            $table->timestamps();
         });
     }
 
@@ -151,8 +149,14 @@ PHP;
             'DecimalColumn' => self::renderDecimalCall($name, $snapshot),
             'DateTimeColumn' => self::renderDateTimeCall($name, $snapshot),
             'ForeignIdColumn' => self::renderForeignIdCall($name, $snapshot),
+            'IdColumn' => $name === 'id' ? '$table->id()' : "\$table->id('{$name}')",
+            'TimestampsColumn' => '$table->timestamps()',
             default => throw new LogicException("Unknown column type: {$snapshot['type']}"),
         };
+
+        if ($snapshot['type'] === 'TimestampsColumn') {
+            return $call.';';
+        }
 
         if ($snapshot['nullable']) {
             $call .= '->nullable()';
