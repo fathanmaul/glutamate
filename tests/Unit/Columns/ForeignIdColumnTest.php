@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Schema;
 it('creates foreign key and enforces onDelete cascade', function () {
     DB::statement('PRAGMA foreign_keys = ON;');
 
+    Schema::dropIfExists('posts');
+    Schema::dropIfExists('users');
+
     Schema::create('users', function ($table) {
         $table->id();
     });
@@ -33,6 +36,9 @@ it('creates foreign key and enforces onDelete cascade', function () {
 
 it('infers table name from column name when constrained is called without argument', function () {
     DB::statement('PRAGMA foreign_keys = ON;');
+
+    Schema::dropIfExists('comments');
+    Schema::dropIfExists('users');
 
     Schema::create('users', function ($table) {
         $table->id();
