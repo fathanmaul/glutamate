@@ -1,0 +1,5 @@
+services:
+    -
+        class: Glutamate\PHPStan\EloquentWhereTypeRule
+        tags:
+            - phpstan.rules.rule
