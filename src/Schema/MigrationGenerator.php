@@ -143,6 +143,7 @@ PHP;
     {
         $call = match ($snapshot['type']) {
             'StringColumn' => self::renderStringCall($name, $snapshot),
+            'TextColumn' => "\$table->text('{$name}')",
             'IntColumn' => self::renderIntCall($name, $snapshot),
             'BoolColumn' => "\$table->boolean('{$name}')",
             'EnumColumn' => self::renderEnumCall($name, $snapshot),

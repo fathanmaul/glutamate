@@ -14,6 +14,7 @@ use Glutamate\Columns\ForeignIdColumn;
 use Glutamate\Columns\IdColumn;
 use Glutamate\Columns\IntColumn;
 use Glutamate\Columns\StringColumn;
+use Glutamate\Columns\TextColumn;
 use Glutamate\Columns\TimestampsColumn;
 use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
@@ -160,6 +161,7 @@ final class EloquentWhereTypeRule implements Rule
             IntColumn::class => new IntegerType,
             BoolColumn::class => new BooleanType,
             StringColumn::class,
+            TextColumn::class,
             EnumColumn::class,
             DecimalColumn::class => new StringType,
             DateTimeColumn::class => new ObjectType(Carbon::class),

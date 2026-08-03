@@ -149,3 +149,26 @@ it('generates a frozen alter migration adding and removing columns and executes 
     // Cleanup
     File::deleteDirectory($tempPath);
 });
+
+it('generates text column calls in migration', function () {
+    $current = new SchemaSnapshot(
+        modelClass: 'App\\Entities\\Article',
+        table: 'test_generator_articles',
+        columns: [
+            'body' => [
+                'type' => 'TextColumn',
+                'nullable' => true,
+                'hasDefault' => false,
+                'default' => null,
+                'unique' => false,
+                'index' => false,
+                'meta' => [],
+            ],
+        ],
+    );
+
+    $diff = SchemaDiffer::diff(null, $current);
+    $code = MigrationGenerator::generate('App\\Entities\\Article', null, $current, $diff);
+
+    expect($code)->toContain("\$table->text('body')->nullable();");
+});
